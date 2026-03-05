@@ -1,68 +1,53 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Mar 05, 2026 at 04:24 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+DROP DATABASE IF EXISTS library_lab;
+CREATE DATABASE library_lab;
+USE library_lab;
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+CREATE TABLE MEMBER (
+    MemberID INT,
+    FullName VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    Age INT,
+    Gender ENUM('M','F'),
+    CONSTRAINT PK_MEMBER PRIMARY KEY (MemberID),
+    CONSTRAINT UQ_MEMBER_EMAIL UNIQUE (Email),
+    CONSTRAINT CHK_MEMBER_AGE CHECK (Age >= 12)
+);
 
+CREATE TABLE BOOK (
+    BookID INT,
+    Title VARCHAR(150) NOT NULL,
+    ISBN VARCHAR(50) NOT NULL,
+    Price DECIMAL(6,2),
+    Status ENUM('AVAILABLE','BORROWED') DEFAULT 'AVAILABLE',
+    CONSTRAINT PK_BOOK PRIMARY KEY (BookID),
+    CONSTRAINT UQ_BOOK_ISBN UNIQUE (ISBN),
+    CONSTRAINT CHK_BOOK_PRICE CHECK (Price >= 0)
+);
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+CREATE TABLE LOAN (
+    LoanID INT,
+    MemberID INT,
+    BookID INT,
+    CONSTRAINT PK_LOAN PRIMARY KEY (LoanID),
+    CONSTRAINT FK_LOAN_MEMBER FOREIGN KEY (MemberID) REFERENCES MEMBER(MemberID),
+    CONSTRAINT FK_LOAN_BOOK FOREIGN KEY (BookID) REFERENCES BOOK(BookID)
+);
 
---
--- Database: `library_lab`
---
+INSERT INTO MEMBER (MemberID, FullName, Email, Age, Gender) VALUES
+(1, 'Rahim Khan', 'rahim@gmail.com', 20, 'M'),
+(2, 'Karim Ali', 'karim@gmail.com', 22, 'M'),
+(3, 'Sadia Islam', 'sadia@gmail.com', 19, 'F'),
+(4, 'Nusrat Jahan', 'nusrat@gmail.com', 25, 'F'),
+(5, 'Tanvir Hasan', 'tanvir@gmail.com', 30, 'M');
 
--- --------------------------------------------------------
+INSERT INTO BOOK (BookID, Title, ISBN, Price, Status) VALUES
+(1, 'Database Basics', 'ISBN001', 350, 'AVAILABLE'),
+(2, 'Learning SQL', 'ISBN002', 400, 'AVAILABLE'),
+(3, 'Web Development', 'ISBN003', 450, 'AVAILABLE'),
+(4, 'Programming C', 'ISBN004', 300, 'AVAILABLE'),
+(5, 'Python Guide', 'ISBN005', 500, 'AVAILABLE');
 
---
--- Table structure for table `book`
---
-
-CREATE TABLE `book` (
-  `BookID` int(11) NOT NULL,
-  `Title` varchar(150) NOT NULL,
-  `ISBN` varchar(50) NOT NULL,
-  `Price` decimal(8,2) DEFAULT NULL,
-  `Availability` enum('AVAILABLE','BORROWED') DEFAULT 'AVAILABLE'
-) ;
-
---
--- Dumping data for table `book`
---
-
-INSERT INTO `book` (`BookID`, `Title`, `ISBN`, `Price`, `Availability`) VALUES
-(1, 'Database Basics', 'ISBN001', 350.00, 'AVAILABLE'),
-(2, 'Learning SQL', 'ISBN002', 400.00, 'AVAILABLE'),
-(3, 'Web Development', 'ISBN003', 450.00, 'AVAILABLE'),
-(4, 'Programming C', 'ISBN004', 300.00, 'AVAILABLE'),
-(5, 'Python Guide', 'ISBN005', 500.00, 'AVAILABLE');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `borrow`
---
-
-CREATE TABLE `borrow` (
-  `LoanID` int(11) NOT NULL,
-  `MemberID` int(11) DEFAULT NULL,
-  `BookID` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `borrow`
---
-
-INSERT INTO `borrow` (`LoanID`, `MemberID`, `BookID`) VALUES
+INSERT INTO LOAN (LoanID, MemberID, BookID) VALUES
 (1, 1, 1),
 (2, 2, 2),
 (3, 3, 3),
@@ -70,69 +55,9 @@ INSERT INTO `borrow` (`LoanID`, `MemberID`, `BookID`) VALUES
 (5, 4, 5),
 (6, 5, 2);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `member`
---
-
-CREATE TABLE `member` (
-  `MemberID` int(11) NOT NULL,
-  `FullName` varchar(100) NOT NULL,
-  `Email` varchar(100) NOT NULL,
-  `Age` int(11) DEFAULT NULL,
-  `Phone` varchar(15) NOT NULL DEFAULT 'N/A'
-) ;
-
---
--- Dumping data for table `member`
---
-
-INSERT INTO `member` (`MemberID`, `FullName`, `Email`, `Age`, `Phone`) VALUES
-(1, 'Rahim Khan', 'rahim@gmail.com', 20, 'N/A'),
-(2, 'Karim Ali', 'karim@gmail.com', 22, 'N/A'),
-(3, 'Sadia Islam', 'sadia@gmail.com', 19, 'N/A'),
-(4, 'Nusrat Jahan', 'nusrat@gmail.com', 25, 'N/A'),
-(5, 'Tanvir Hasan', 'tanvir@gmail.com', 30, 'N/A');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `book`
---
-ALTER TABLE `book`
-  ADD PRIMARY KEY (`BookID`),
-  ADD UNIQUE KEY `UQ_BOOK_ISBN` (`ISBN`);
-
---
--- Indexes for table `borrow`
---
-ALTER TABLE `borrow`
-  ADD PRIMARY KEY (`LoanID`),
-  ADD KEY `FK_LOAN_MEMBER` (`MemberID`),
-  ADD KEY `FK_LOAN_BOOK` (`BookID`);
-
---
--- Indexes for table `member`
---
-ALTER TABLE `member`
-  ADD PRIMARY KEY (`MemberID`),
-  ADD UNIQUE KEY `UQ_MEMBER_EMAIL` (`Email`);
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `borrow`
---
-ALTER TABLE `borrow`
-  ADD CONSTRAINT `FK_LOAN_BOOK` FOREIGN KEY (`BookID`) REFERENCES `book` (`BookID`),
-  ADD CONSTRAINT `FK_LOAN_MEMBER` FOREIGN KEY (`MemberID`) REFERENCES `member` (`MemberID`);
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+ALTER TABLE MEMBER ADD Phone VARCHAR(15) NOT NULL DEFAULT 'N/A';
+ALTER TABLE BOOK MODIFY Price DECIMAL(8,2);
+ALTER TABLE BOOK CHANGE Status Availability ENUM('AVAILABLE','BORROWED') DEFAULT 'AVAILABLE';
+ALTER TABLE MEMBER DROP COLUMN Gender;
+ALTER TABLE MEMBER ADD CONSTRAINT CHK_PHONE CHECK (Phone <> '');
+RENAME TABLE LOAN TO BORROW;
